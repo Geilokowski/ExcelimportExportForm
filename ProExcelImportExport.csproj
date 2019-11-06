@@ -50,23 +50,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExcelImport.cs" />
-    <Compile Include="FoExcelImportExport.cs">
+    <Compile Include="Helper\ExcelImport.cs" />
+    <Compile Include="Forms\FoExcelImportExport.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FoExcelImportExport.Designer.cs">
+    <Compile Include="Forms\FoExcelImportExport.Designer.cs">
       <DependentUpon>FoExcelImportExport.cs</DependentUpon>
     </Compile>
-    <Compile Include="FoSucheSchueler.cs">
+    <Compile Include="Forms\FoSucheSchueler.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FoSucheSchueler.Designer.cs">
+    <Compile Include="Forms\FoSucheSchueler.Designer.cs">
       <DependentUpon>FoSucheSchueler.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TObjKlassen.cs" />
-    <Compile Include="TObjPerson.cs" />
+    <Compile Include="Helper\TObjKlassen.cs" />
+    <Compile Include="Helper\TObjPerson.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -102,10 +102,10 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="FoExcelImportExport.resx">
+    <EmbeddedResource Include="Forms\FoExcelImportExport.resx">
       <DependentUpon>FoExcelImportExport.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FoSucheSchueler.resx">
+    <EmbeddedResource Include="Forms\FoSucheSchueler.resx">
       <DependentUpon>FoSucheSchueler.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>

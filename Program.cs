@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using System.Reflection;
+using System.Windows.Forms;
 
 namespace ProExcelImportExport
 {
@@ -42,7 +42,9 @@ namespace ProExcelImportExport
         
         static void Main(string[] args)
         {
-            
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
             TObjExcelImport ExcelBestandsListe;
             TObjBestandsListe ObjektBestandsListe;
             TObjExcelImport ExcelZensosListe;

@@ -15,40 +15,46 @@ namespace ProExcelImportExport
     public partial class FoSucheSchueler : Form
     {
         TObjBestandsListe ObjBestandsListe;
-        List<List<String>> ListeSuchergebnisse;
+        List<List<String>> ListeSuchergebnisse = new List<List<string>> { };
         List<List<String>> ListeAuswahlSchueler;
-        
+        bool sortAfterNameAndClass = true;
+
         public FoSucheSchueler(TObjBestandsListe ObjektBestandsListe)
         {
             InitializeComponent();
             ObjBestandsListe = ObjektBestandsListe;
-            ListeSuchergebnisse = new List<List<string>> { };
             ListeAuswahlSchueler = new List<List<string>> { };
             rBKlasse.Checked = true;
             rBName.Checked = false;
         }
 
-        private void LoescheEintraegeAuswahlListe(List<String> ZuLoeschendeEintraege)
-        {
-                    GleicheErgebnisListeMitAuswahlListeAb();
-        }
-
         private void SortiereListeAuswahlSchueler()
         {
-        }
+            List<List<String>> sortedList = new List<List<string>> { };
+            if (sortAfterNameAndClass)
+            {
+                // Sortiere nach Klasse und Namen
+                sortedList = TObjKlassen.SortiereListeNachKlassen(ListeAuswahlSchueler);
+            }
+            else
+            {
+                // Sortiere nach Namen
+                sortedList = TObjKlassen.SortiereListeNachNamen(ListeAuswahlSchueler);
+            }
 
-        private void AddListeAuswahlSchueler(List<List<String>> ListeNeuerEintraege)
-        {
-            SortiereListeAuswahlSchueler();
-        }
+            ListeAuswahlSchueler = sortedList;
+            cLBAuswahlListe.Items.Clear();
 
-        private void GleicheErgebnisListeMitAuswahlListeAb()
-        {
+            foreach (List<String> schueler in ListeAuswahlSchueler)
+            {
+                cLBAuswahlListe.Items.Add(schueler[1] + " " + schueler[2] + ", " + schueler[3]);
+            }
         }
 
         private void btClose_Click(object sender, EventArgs e)
         {
             ObjBestandsListe.ArbeitsListeAusgewaehlterSchueler.Clear();
+
             foreach(List<String> Eintrag in ListeAuswahlSchueler)
             {
                 ObjBestandsListe.ArbeitsListeAusgewaehlterSchueler.Add(Eintrag);
@@ -58,42 +64,65 @@ namespace ProExcelImportExport
 
         private void tBEingabeSuchBegriff_TextChanged(object sender, EventArgs e)
         {
-            List<List<String>> SuchErgebnisListeTest = ObjBestandsListe.SucheSchueler(tBEingabeSuchBegriff.Text);
-            List<List<String>> SuchErgebnisListe = new List<List<string>> { };
+            List<List<String>> SuchErgebnisListe = ObjBestandsListe.SucheSchueler(tBEingabeSuchBegriff.Text); // Liste mit Schülern die Suche entsprechen
+            cLBSuchErgebnis.Items.Clear();
+            ListeSuchergebnisse = SuchErgebnisListe;
 
-            GleicheErgebnisListeMitAuswahlListeAb();
+            foreach (List<String> schueler in SuchErgebnisListe)
+            {
+                if (!ListeAuswahlSchueler.Contains(schueler)) {
+                    cLBSuchErgebnis.Items.Add(schueler[1] + " " + schueler[2] + ", " + schueler[3]);
+                }
+            }
         }
 
         private void cLBSuchErgebnis_SelectedValueChanged(object sender, EventArgs e)
         {
-            List<List<String>> ListeNeuerEintraege = new List<List<string>> { };
-            List<String> ListeZuLoeschenderEintraege = new List<string> { };
-            Int32 AnzEintraege = cLBSuchErgebnis.Items.Count;
-            AddListeAuswahlSchueler(ListeNeuerEintraege);
-            LoescheEintraegeAuswahlListe(ListeZuLoeschenderEintraege);
+            for(int i = 0; i < cLBSuchErgebnis.SelectedItems.Count; i++)
+            {
+                int index = cLBSuchErgebnis.Items.IndexOf(cLBSuchErgebnis.SelectedItems[i]);
+                cLBAuswahlListe.Items.Add(cLBSuchErgebnis.SelectedItems[i]);
+                ListeAuswahlSchueler.Add(ListeSuchergebnisse[index]);
+
+                cLBSuchErgebnis.Items.RemoveAt(index);
+            }
+
+            SortiereListeAuswahlSchueler();
         }
 
         private void bTAswahlAllerEintraege_Click(object sender, EventArgs e)
         {
-            Int32 AnzEintraege = cLBSuchErgebnis.Items.Count;
+            int AnzEintraege = cLBSuchErgebnis.Items.Count;
         }
 
         private void rBKlasse_Click(object sender, EventArgs e)
         {
-        
+            rBName.Checked = false;
+            sortAfterNameAndClass = true;
+            SortiereListeAuswahlSchueler();
         }
 
         private void rBName_Click(object sender, EventArgs e)
         {
-            rBKlasse.Checked = !rBName.Checked;
+            rBKlasse.Checked = false;
+            sortAfterNameAndClass = false;
             SortiereListeAuswahlSchueler();
         }
 
         private void cLBAuswahlListe_SelectedValueChanged(object sender, EventArgs e)
         {
-                List<String> ListeZuLoeschenderEintraege = new List<String> { };
+            for (int i = 0; i < cLBAuswahlListe.SelectedItems.Count; i++)
+            {
+                int index = cLBAuswahlListe.Items.IndexOf(cLBAuswahlListe.SelectedItems[i]);
 
-            LoescheEintraegeAuswahlListe(ListeZuLoeschenderEintraege);
+                if (ListeSuchergebnisse.Contains(ListeAuswahlSchueler[index]))
+                {
+                    cLBSuchErgebnis.Items.Add(cLBAuswahlListe.SelectedItems[i]);
+                }
+
+                ListeAuswahlSchueler.RemoveAt(index);
+                cLBAuswahlListe.Items.RemoveAt(index);
+            }
         }
 
         private void btExcelExport_Click(object sender, EventArgs e)
@@ -110,6 +139,16 @@ namespace ProExcelImportExport
                 String DateiName = SFD.FileName;
                 TObjExcelExport ExcelObjekt = new TObjExcelExport(DateiName, ListeAuswahlSchueler);               
             }
+        }
+
+        private void FoSucheSchueler_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void rBKlasse_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

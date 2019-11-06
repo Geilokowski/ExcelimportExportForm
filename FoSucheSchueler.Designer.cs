@@ -34,8 +34,8 @@
             this.bTAswahlAllerEintraege = new System.Windows.Forms.Button();
             this.cLBAuswahlListe = new System.Windows.Forms.CheckedListBox();
             this.gBSortieren = new System.Windows.Forms.GroupBox();
-            this.rBName = new System.Windows.Forms.RadioButton();
             this.rBKlasse = new System.Windows.Forms.RadioButton();
+            this.rBName = new System.Windows.Forms.RadioButton();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -104,17 +104,6 @@
             this.gBSortieren.TabStop = false;
             this.gBSortieren.Text = "Sortierung der ausgewählten Einträge:";
             // 
-            // rBName
-            // 
-            this.rBName.AutoSize = true;
-            this.rBName.Location = new System.Drawing.Point(184, 23);
-            this.rBName.Name = "rBName";
-            this.rBName.Size = new System.Drawing.Size(86, 17);
-            this.rBName.TabIndex = 0;
-            this.rBName.Text = "nach Namen";
-            this.rBName.UseVisualStyleBackColor = true;
-            this.rBName.Click += new System.EventHandler(this.rBName_Click);
-            // 
             // rBKlasse
             // 
             this.rBKlasse.AutoSize = true;
@@ -126,7 +115,19 @@
             this.rBKlasse.TabStop = true;
             this.rBKlasse.Text = "nach Klassen und Namen";
             this.rBKlasse.UseVisualStyleBackColor = true;
+            this.rBKlasse.CheckedChanged += new System.EventHandler(this.rBKlasse_CheckedChanged);
             this.rBKlasse.Click += new System.EventHandler(this.rBKlasse_Click);
+            // 
+            // rBName
+            // 
+            this.rBName.AutoSize = true;
+            this.rBName.Location = new System.Drawing.Point(184, 23);
+            this.rBName.Name = "rBName";
+            this.rBName.Size = new System.Drawing.Size(86, 17);
+            this.rBName.TabIndex = 0;
+            this.rBName.Text = "nach Namen";
+            this.rBName.UseVisualStyleBackColor = true;
+            this.rBName.Click += new System.EventHandler(this.rBName_Click);
             // 
             // label1
             // 
@@ -182,6 +183,7 @@
             this.Controls.Add(this.btClose);
             this.Name = "FoSucheSchueler";
             this.Text = "FoSucheSchueler";
+            this.Load += new System.EventHandler(this.FoSucheSchueler_Load);
             this.gBSortieren.ResumeLayout(false);
             this.gBSortieren.PerformLayout();
             this.ResumeLayout(false);

@@ -25,7 +25,7 @@ namespace ProExcelImportExport
         public readonly List<String> AlleKlassen;
         public readonly List<String> AlleJGKZ;
         public List<String> AktuelleKlassenListe;
-        public List<String> AktuelleJGKZListe;
+        public static List<String> AktuelleJGKZListe;
 
         public TObjKlassen(List<List<String>> UrListe)
         {
@@ -125,7 +125,7 @@ namespace ProExcelImportExport
             AktualisiereSchuelerUndKlassenListen();
 
         }
-        public String BildeSuchName(List<String> ListenEintrag)
+        public static String BildeSuchName(List<String> ListenEintrag)
         {
             String SName = "";
             if (ListenEintrag.Count() > 3)
@@ -371,7 +371,7 @@ namespace ProExcelImportExport
             }
         }
 
-        public List<List<String>> SortiereListeNachNamen(List<List<String>> SortList)
+        public static List<List<String>> SortiereListeNachNamen(List<List<String>> SortList)
         {
             List<List<String>> ArbeitsListe = new List<List<string>> { };
             ArbeitsListe = SortList;
@@ -380,7 +380,7 @@ namespace ProExcelImportExport
             for (int i = 0; i < SortList.Count - 1; i++)
                 for (int k = i + 1; k < SortList.Count; k++)
                 {
-                    NameA =BildeSuchName(ArbeitsListe[i]);
+                    NameA = BildeSuchName(ArbeitsListe[i]);
                     NameB = BildeSuchName(ArbeitsListe[k]);
                     if (NameA.CompareTo(NameB) > 0)
                     {
@@ -392,7 +392,7 @@ namespace ProExcelImportExport
             return ArbeitsListe;
         }
 
-        public List<List<String>> SortiereListeNachKlassen(List<List<String>> SortList)
+        public static List<List<String>> SortiereListeNachKlassen(List<List<String>> SortList)
         {
             List<List<String>> ArbeitsListe = new List<List<string>> { };
             List<List<String>> KlassenListe = new List<List<string>> { };

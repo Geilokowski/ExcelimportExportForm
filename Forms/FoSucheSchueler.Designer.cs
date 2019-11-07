@@ -115,7 +115,6 @@
             this.rBKlasse.TabStop = true;
             this.rBKlasse.Text = "nach Klassen und Namen";
             this.rBKlasse.UseVisualStyleBackColor = true;
-            this.rBKlasse.CheckedChanged += new System.EventHandler(this.rBKlasse_CheckedChanged);
             this.rBKlasse.Click += new System.EventHandler(this.rBKlasse_Click);
             // 
             // rBName
@@ -183,7 +182,6 @@
             this.Controls.Add(this.btClose);
             this.Name = "FoSucheSchueler";
             this.Text = "FoSucheSchueler";
-            this.Load += new System.EventHandler(this.FoSucheSchueler_Load);
             this.gBSortieren.ResumeLayout(false);
             this.gBSortieren.PerformLayout();
             this.ResumeLayout(false);

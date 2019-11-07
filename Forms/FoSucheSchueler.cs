@@ -140,15 +140,5 @@ namespace ProExcelImportExport
                 TObjExcelExport ExcelObjekt = new TObjExcelExport(DateiName, ListeAuswahlSchueler);               
             }
         }
-
-        private void FoSucheSchueler_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void rBKlasse_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }

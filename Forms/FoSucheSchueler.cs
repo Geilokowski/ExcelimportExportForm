@@ -28,6 +28,20 @@ namespace ProExcelImportExport
             rBName.Checked = false;
         }
 
+        private void SortiereListeSuche()
+        {
+            List<List<String>> sortedList = TObjKlassen.SortiereListeNachKlassen(ListeSuchergebnisse);
+
+            ListeSuchergebnisse = sortedList;
+            cLBSuchErgebnis.Items.Clear();
+
+            foreach (List<String> schueler in ListeSuchergebnisse)
+            {
+                cLBSuchErgebnis.Items.Add(schueler[1] + " " + schueler[2] + ", " + schueler[3]);
+            }
+
+        }
+
         private void SortiereListeAuswahlSchueler()
         {
             List<List<String>> sortedList = new List<List<string>> { };
@@ -122,6 +136,8 @@ namespace ProExcelImportExport
 
                 ListeAuswahlSchueler.RemoveAt(index);
                 cLBAuswahlListe.Items.RemoveAt(index);
+
+                SortiereListeSuche();
             }
         }
 

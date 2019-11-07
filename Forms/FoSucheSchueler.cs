@@ -65,6 +65,21 @@ namespace ProExcelImportExport
             }
         }
 
+        // Methode zum Sortieren der Linken Liste
+        private void SortiereListeSuchergebnisse()
+        {
+            // Sortiere nach Klasse und Namen 
+            // Credits: Thomas Wendland
+            ListeSuchergebnisse = TObjKlassen.SortiereListeNachKlassen(ListeSuchergebnisse);
+
+            cLBSuchErgebnis.Items.Clear();
+
+            foreach (List<String> schueler in ListeSuchergebnisse)
+            {
+                cLBSuchErgebnis.Items.Add(schueler[1] + " " + schueler[2] + ", " + schueler[3]);
+            }
+        }
+
         private void btClose_Click(object sender, EventArgs e)
         {
             ObjBestandsListe.ArbeitsListeAusgewaehlterSchueler.Clear();
@@ -99,6 +114,7 @@ namespace ProExcelImportExport
                 ListeAuswahlSchueler.Add(ListeSuchergebnisse[index]);
 
                 cLBSuchErgebnis.Items.RemoveAt(index);
+                ListeSuchergebnisse.RemoveAt(index); // Die Zeile gabs davor nicht, da war der Fehler.
             }
 
             SortiereListeAuswahlSchueler();
@@ -125,19 +141,24 @@ namespace ProExcelImportExport
 
         private void cLBAuswahlListe_SelectedValueChanged(object sender, EventArgs e)
         {
+            List<List<String>> SuchErgebnisListe = ObjBestandsListe.SucheSchueler(tBEingabeSuchBegriff.Text); // Komplette Liste mit allen Suchergebnissen egal ob sie bereits in der Auswahlliste sind
             for (int i = 0; i < cLBAuswahlListe.SelectedItems.Count; i++)
             {
                 int index = cLBAuswahlListe.Items.IndexOf(cLBAuswahlListe.SelectedItems[i]);
 
-                if (ListeSuchergebnisse.Contains(ListeAuswahlSchueler[index]))
+                // Die Variable ListeSuchergebnisse kann die Werte garnicht enthalten da wir sie ja löschen sobald wir sie von der linken Liste in die Rechte "schieben". Daher brauchen wir eine "cleane" Liste
+                if (SuchErgebnisListe.Contains(ListeAuswahlSchueler[index]))
                 {
                     cLBSuchErgebnis.Items.Add(cLBAuswahlListe.SelectedItems[i]);
                 }
 
+                ListeSuchergebnisse.Add(ListeAuswahlSchueler[index]); // Fehlte auch, hinzufügen des Schülers zu unserer "Background" Liste
+
+                // Jetzt werden die wieder hinzugefügt, müssen aber noch sortiert werden.
+                SortiereListeSuchergebnisse();
+
                 ListeAuswahlSchueler.RemoveAt(index);
                 cLBAuswahlListe.Items.RemoveAt(index);
-
-                SortiereListeSuche();
             }
         }
 

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using System.IO;
+using ProExcelImportExport.Helper;
 
 namespace ProExcelImportExport
 {
@@ -174,7 +175,9 @@ namespace ProExcelImportExport
             if (result==DialogResult.OK)
             {
                 String DateiName = SFD.FileName;
-                TObjExcelExport ExcelObjekt = new TObjExcelExport(DateiName, ListeAuswahlSchueler);               
+
+                TObjExcelExport ExcelObjekt = new TObjExcelExport(DateiName, ListeAuswahlSchueler);
+                ExcelObjekt.ExportFancy();
             }
         }
     }

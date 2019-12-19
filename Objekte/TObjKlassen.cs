@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using ProExcelImportExport.Helper;
 
 namespace ProExcelImportExport
 {
@@ -27,8 +28,15 @@ namespace ProExcelImportExport
         public List<String> AktuelleKlassenListe;
         public static List<String> AktuelleJGKZListe;
 
+        public readonly List<String> header;
+
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
         public TObjKlassen(List<List<String>> UrListe)
         {
+            header = UrListe[0];
+            UrListe.RemoveAt(0);
+
             SchuelerListe = new List<List<String>> { };
             Schuljahr = BestimmeSchuljahr();
             ReferenzJahr = BestimmeReferenzJahr();
@@ -43,6 +51,7 @@ namespace ProExcelImportExport
             foreach (String Klasse in KlassenStufe6)
                 AlleJGKZ.Add("JG" + (ReferenzJahr - 2001).ToString() + Klasse.Substring(1, Klasse.Length - 1));
             KlassenStufe7 = new List<string> { "7a", "7b", "7s", "7s-1", "7s-2" };
+
             foreach (String Klasse in KlassenStufe7)
                 if (Klasse.Contains("s"))
                 {
@@ -98,6 +107,7 @@ namespace ProExcelImportExport
 
             GrundStufe = new List<String> { "5s", "6s" };
             Sekundarstufe1 = new List<String> { };
+
             foreach (String Element in KlassenStufe7)
                 Sekundarstufe1.Add(Element);
             foreach (String Element in KlassenStufe8)
@@ -125,6 +135,7 @@ namespace ProExcelImportExport
             AktualisiereSchuelerUndKlassenListen();
 
         }
+
         public static String BildeSuchName(List<String> ListenEintrag)
         {
             String SName = "";
@@ -143,23 +154,6 @@ namespace ProExcelImportExport
                 SName = ListenEintrag[3].Trim().ToLower() + " " + ListenEintrag[2].Trim().ToLower();
             }
             return SName;
-        }
-
-
-        public List<List<String>> SucheListenEintragAnhandSuchName(String Suchname, List<List<String>> EintragsListe)
-        {
-            List<List<String>> ArbeitsListe = new List<List<string>> { };
-            String SName = Suchname.Trim().ToLower();
-            foreach(List<String> Eintrag in EintragsListe)
-            {
-                String VergleichsName = BildeSuchName(Eintrag);
-                // unscharfer Vergleich
-                if (SName.Contains(VergleichsName) || VergleichsName.Contains(SName))
-                {
-                    ArbeitsListe.Add(Eintrag);
-                }
-            }
-            return ArbeitsListe;
         }
 
         public List<List<String>> SucheEintragInSchuelerListeAnhandSuchName(String Suchname)
@@ -282,32 +276,6 @@ namespace ProExcelImportExport
             return SJahr;
         }
 
-        public String OrdneEinerKlasseDasJGKZZu(String Klasse)
-        {
-            Int32 KPos = AlleKlassen.IndexOf(Klasse);
-            if (KPos > 0)
-            {
-                return AlleJGKZ[KPos];
-            }
-            else
-            {
-                return "n.n.";
-            }
-        }
-
-        public String OrdneEinemJGKZDieKlasseZu(String JGKZ)
-        {
-            Int32 KPos = AlleJGKZ.IndexOf(JGKZ);
-            if (KPos > 0)
-            {
-                return AlleKlassen[KPos];
-            }
-            else
-            {
-                return "n.n.";
-            }
-        }
-
         private void BereiteSchuelerListenEintraegeAuf(List<List<String>> UrListe)
         {
             Int32 EPos = -1; String JGKZ = "n.n."; String Klasse = "n.n.";
@@ -421,44 +389,31 @@ namespace ProExcelImportExport
             SchuelerListe = SortiereListeNachKlassen(SchuelerListe);
         }
 
-        public void DerSchuelerListeEintraegeHinzufügen(List<List<String>> ListeNeuerEintraege)
-        {
-            List<String> NamensListe = new List<String> { };
-            foreach (List<String> Eintrag in SchuelerListe)
-                NamensListe.Add(BildeSuchName(Eintrag));
-            foreach (List<String> Eintrag in ListeNeuerEintraege)
-            {
-                // Mindesteinträge : JKZ - Klasse - Name - Vorname
-                if (Eintrag.Count > 3 & Eintrag[0].Length > 0)
-                {
-                    if (OrdneEinemJGKZDieKlasseZu(Eintrag[0]).CompareTo(Eintrag[1]) == 0
-                        & !NamensListe.Contains(BildeSuchName(Eintrag)))
-                    {
-                        SchuelerListe.Add(Eintrag);
-                    }
-                }
-
-            }
-            AktualisiereSchuelerUndKlassenListen();
-        }
-
-
         public List<List<String>> BestimmeSchuelerDieNichtInAndererListeEnthaltenSind(List<List<String>> AndereSchuelerListe)
         {
             // Grundaufbau der zu vergleichenden Listen : JGKZ - Klasse - Name - Vorname
-            List<List<String>> ListeDerSchuelerDieNichtInAndererListeEnthaltenSind = new List<List<String>> { };
+            List<List<String>> returnList = new List<List<String>> { };
             List<List<String>> ArbeitsListe = new List<List<String>> { };
 
             foreach (List<String> Eintrag in SchuelerListe)
             {
                 ArbeitsListe = SucheListenEintragAnhandSuchEintrag(Eintrag, AndereSchuelerListe);
 
-                if (ArbeitsListe.Count()<1)
+                if (ArbeitsListe.Count < 0)
                 {
-                    ListeDerSchuelerDieNichtInAndererListeEnthaltenSind.Add(Eintrag);
+                    // Wenn man das so macht hat man am Ende in der Liste unterschiedlich lange Sublisten. Dann gibts immer IndexOutOfBoundsException. Garnicht geil...
+                    // ListeDerSchuelerDieNichtInAndererListeEnthaltenSind.Add(Eintrag);
+
+                    while(Eintrag.Count <= SchuelerListe[0].Count)
+                    {
+                        Eintrag.Add("n.n");
+                    }
+
+                    returnList.Add(Eintrag);
                 }
             }
-            return ListeDerSchuelerDieNichtInAndererListeEnthaltenSind;
+
+            return returnList;
         }
 
 
@@ -489,6 +444,11 @@ namespace ProExcelImportExport
                         {
                             if (!(Eintrag[0].Equals(AndererEintrag[0]) && Eintrag[1].Equals(AndererEintrag[1])))
                             {
+                                while (Eintrag.Count <= SchuelerListe[0].Count)
+                                {
+                                    Eintrag.Add("n.n");
+                                }
+
                                 ListeDerSchuelerMitVeraenderungen.Add(Eintrag);
                             }                            
                         }
@@ -501,168 +461,4 @@ namespace ProExcelImportExport
         }
 
     }
-
-    public class TObjBestandsListe : TObjKlassen
-    {
-        public List<TSchueler> SchuelerObjektListe;
-        // List<List<String>> UrListe: JGKZ - Name - Vorname - Geburtsdatum - Geschlecht
-        // List<List<String>> SchuelerListe: JGKZ - Klasse - Name - Vorname - Geburtsdatum - Geschlecht
-        public List<List<String>> ListeDerSchuelerDieNichtInZensosListeEnthaltenSind;
-        public List<List<String>> ArbeitsListeAusgewaehlterSchueler;
-
-        public TObjBestandsListe(List<List<String>> UrListe) : base(UrListe)
-        {
-            SchuelerObjektListe = new List<TSchueler> { };
-            foreach (List<String> Eintrag in SchuelerListe)
-            {
-                TSchueler SchuelerObjekt = new TSchueler(Eintrag[0], Eintrag[1], Eintrag[2], Eintrag[3], Eintrag[4], Eintrag[5]);
-                SchuelerObjektListe.Add(SchuelerObjekt);
-            }
-            ListeDerSchuelerDieNichtInZensosListeEnthaltenSind = new List<List<string>> { };
-            ArbeitsListeAusgewaehlterSchueler = new List<List<string>> { };
-        }
-
-        public void GleicheBestandsListeMitZensosListeAb(TObjZensosListe ZensosObjekt)
-        {
-            List<String> IDSchuelerListe = new List<string> { };
-            ListeDerSchuelerDieNichtInZensosListeEnthaltenSind.Clear();
-            foreach (List<String> Eintrag in SchuelerListe)
-            {
-                String IDName = Eintrag[2] + ", " + Eintrag[3];
-                IDSchuelerListe.Add(IDName);
-            }
-            if (!(ZensosObjekt.ListeDerSchuelerDieNichtInBestandsListeEnthaltenSind == null))
-            {
-                ZensosObjekt.ListeDerSchuelerDieNichtInBestandsListeEnthaltenSind.Clear();
-            }
-            ZensosObjekt.ListeDerSchuelerDieNichtInBestandsListeEnthaltenSind = ZensosObjekt.BestimmeSchuelerDieNichtInAndererListeEnthaltenSind(SchuelerListe);
-            if (!(ZensosObjekt.ListeDerSchuelerMitKlassenwechselInZensosListe == null))
-            {
-                ZensosObjekt.ListeDerSchuelerMitKlassenwechselInZensosListe.Clear();
-            }
-
-            ZensosObjekt.ListeDerSchuelerMitKlassenwechselInZensosListe = ZensosObjekt.BestimmeSchuelerMitVeraenderungenInAndererSchuelerListe(SchuelerListe);
-
-            ListeDerSchuelerDieNichtInZensosListeEnthaltenSind = BestimmeSchuelerDieNichtInAndererListeEnthaltenSind(ZensosObjekt.SchuelerListe);
-            
-            foreach (List<String> Eintrag in ListeDerSchuelerDieNichtInZensosListeEnthaltenSind)
-            {
-                Int32 SPos = SchuelerListe.IndexOf(Eintrag);
-                if (SPos > -1)
-                {
-                    SchuelerListe[SPos][6] = "FALSCH";
-                }
-            }
-
-            foreach(List<String> Eintrag in ZensosObjekt.ListeDerSchuelerMitKlassenwechselInZensosListe)
-            {
-                String VName= Eintrag[2] + ", " + Eintrag[3];
-                Int32 i = -1;
-                foreach(String SName in IDSchuelerListe)
-                {
-                    i++;
-                    if(SName.Contains(VName) || VName.Contains(SName))
-                    {
-                        SchuelerListe[i][0] = Eintrag[0];
-                        SchuelerListe[i][1] = Eintrag[1];
-                    }
-                }
-            }
-            AktualisiereSchuelerUndKlassenListen();
-        }
-
-        public List<List<String>> SucheSchueler(String SuchName)
-        {
-            List<List<String>> SuchErgebnisListe = new List<List<string>> { };
-            String SName = SuchName.Trim().ToLower();
-                        
-            if ( SName.StartsWith("5") | SName.StartsWith("6") | SName.StartsWith("7") | SName.StartsWith("8") | SName.StartsWith("9") | SName.StartsWith("1")
-                 | ( SName.StartsWith("jg") && SName.Length > 3 ) | (SName.StartsWith("*") & SName.Length > 1))
-            {
-                if (SName.StartsWith("*"))
-                {
-                    SName = SName.Substring(1).Trim();
-                }
-                SuchErgebnisListe = WaehleKlassenInSchuelerListeAus(SName);
-            }
-            else
-            {
-                SuchErgebnisListe = SucheEintragInSchuelerListeAnhandSuchName(SName);
-            }            
-            return SuchErgebnisListe;
-        }
-    }
-
-
-    public class TObjZensosListe : TObjKlassen
-    {
-        // List<List<String>> UrListe: Klasse - Name - Vorname - Geburtsdatum - Geschlecht
-        // List<List<String>> SchuelerListe: JGKZ - Klasse - Name - Vorname - Geburtsdatum - Geschlecht
-        public List<List<String>> ListeDerSchuelerDieNichtInBestandsListeEnthaltenSind;
-        public List<List<String>> ListeDerSchuelerMitKlassenwechselInZensosListe;
-
-
-        public TObjZensosListe(List<List<String>> UrListe) : base(UrListe)
-        {
-            ListeDerSchuelerDieNichtInBestandsListeEnthaltenSind= new List<List<string>> { };
-            ListeDerSchuelerMitKlassenwechselInZensosListe = new List<List<string>> { };
-        }
-
-        public List<List<String>> ErstelleNeueBestandsSchuelerListe()
-        {
-            List<List<String>> NeueBestandsListe = new List<List<String>> { };
-            TSchueler SchuelerEintrag;
-            foreach (List<String> Eintrag in SchuelerListe)
-            {
-                List<String> NeuerBestandSchueler = new List<string> { };
-                // List<List<String>> NeueBestandsListe: JGKZ - Klasse - Name - Vorname - Geburtsdatum - Geschlecht
-
-                SchuelerEintrag = new TSchueler(Eintrag[0], Eintrag[1], Eintrag[2], Eintrag[3], Eintrag[4], Eintrag[5]);
-
-                NeuerBestandSchueler.Add(SchuelerEintrag.JahrgangKZ);
-                NeuerBestandSchueler.Add(SchuelerEintrag.Klasse);
-                NeuerBestandSchueler.Add(SchuelerEintrag.Name);
-                NeuerBestandSchueler.Add(SchuelerEintrag.Vorname);
-                NeuerBestandSchueler.Add(SchuelerEintrag.GeburtsDatum.ToShortDateString());
-                NeuerBestandSchueler.Add(SchuelerEintrag.Geschlecht);                
-                NeuerBestandSchueler.Add(SchuelerEintrag.UserNameID);
-                NeuerBestandSchueler.Add("true");  // InZensos
-                NeuerBestandSchueler.Add("false");  // InITK
-                NeuerBestandSchueler.Add("n.n.");  // UserNameITK
-                NeuerBestandSchueler.Add("false");  // InO365
-                NeuerBestandSchueler.Add("n.n.");  // UserNameO365
-                NeueBestandsListe.Add(NeuerBestandSchueler);                             
-            }
-            return NeueBestandsListe;
-        }
-
-        public List<List<String>> ErstelleNeueBestandsUrListe()
-        {
-            List<List<String>> NeueBestandsListe = new List<List<String>> { };
-            List<List<String>> BestandsListe = ErstelleNeueBestandsSchuelerListe();
-
-            foreach (List<String> Eintrag in BestandsListe)
-            {
-                // List<List<String>> NeueBestandsListe: JGKZ - Name - Vorname - Geburtsdatum - Geschlecht ...
-
-                List<String> NeuerBestandSchueler = new List<string> { };
-                Eintrag.RemoveAt(1);
-                NeueBestandsListe.Add(Eintrag);
-
-            }
-            return NeueBestandsListe;
-        }
-
-        public TObjBestandsListe CreateNewBestandsListeObject()
-        {
-
-            TObjBestandsListe BestandsListeObject = new TObjBestandsListe(ErstelleNeueBestandsUrListe());
-            return BestandsListeObject;
-        }
-
-
-
-    }
-
-
 }

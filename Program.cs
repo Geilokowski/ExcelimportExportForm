@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Windows.Forms;
+using ProExcelImportExport.Helper;
 
 namespace ProExcelImportExport
 {
@@ -37,11 +38,13 @@ namespace ProExcelImportExport
 
     class Program
     {
-        [STAThread]    // Compilerdirektive für die Nutzung von Systemdialogen
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-        
+        [STAThread]    // Compilerdirektive für die Nutzung von Systemdialogen
         static void Main(string[] args)
         {
+            LoggerUtil.InitLogger();
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
@@ -50,7 +53,6 @@ namespace ProExcelImportExport
             TObjExcelImport ExcelZensosListe;
             TObjZensosListe ObjektZensosListe;
             TProgVerzeichnisse ProgrammVerzeichnisse = new TProgVerzeichnisse();
-
 
             if (ProgrammVerzeichnisse.BestandsDateiExistenz)
             {
@@ -74,17 +76,31 @@ namespace ProExcelImportExport
                 TLeereEintragsListe LeereEintragsListe = new TLeereEintragsListe();
                 ObjektZensosListe = new TObjZensosListe(LeereEintragsListe.LeereListe);
             }
-            
+
             ObjektBestandsListe.GleicheBestandsListeMitZensosListeAb(ObjektZensosListe);
 
-            foreach (List<String> Eintrag in ObjektZensosListe.ListeDerSchuelerDieNichtInBestandsListeEnthaltenSind)
+            List<List<String>> shorter = ObjektZensosListe.ListeDerSchuelerDieNichtInBestandsListeEnthaltenSind;
+            for (int i = 0; i < shorter.Count; i++)
             {
-                Console.WriteLine(Eintrag[0] + " " + Eintrag[1] + " " + Eintrag[2] + " " + Eintrag[3] + " " + Eintrag[4] + " " + Eintrag[5]);
+                try
+                {
+                    Console.WriteLine(shorter[i][0] + " " + shorter[i][1] + " " + shorter[i][2] + " " + shorter[i][3] + " " + shorter[i][4] + " " + shorter[i][5]);
+                } catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                }
             }
 
             foreach (List<String> Eintrag in ObjektZensosListe.ListeDerSchuelerMitKlassenwechselInZensosListe)
             {
-                Console.WriteLine(Eintrag[0] + " " + Eintrag[1] + " " + Eintrag[2] + " " + Eintrag[3] + " " + Eintrag[4] + " " + Eintrag[5]);
+                try
+                {
+                    Console.WriteLine(Eintrag[0] + " " + Eintrag[1] + " " + Eintrag[2] + " " + Eintrag[3] + " " + Eintrag[4] + " " + Eintrag[5]);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                }
             }
 
             Console.WriteLine("");
@@ -99,7 +115,7 @@ namespace ProExcelImportExport
             {
                 Console.WriteLine(Eintrag[0] + " " + Eintrag[1] + " " + Eintrag[2] + " " + Eintrag[3] + " " + Eintrag[4] + " " + Eintrag[5]);
             }
-        
+
             Console.WriteLine("");
 
 
@@ -127,9 +143,7 @@ namespace ProExcelImportExport
                 Console.WriteLine(Eintrag[0] + " " + Eintrag[1] + " " + Eintrag[2] + " " + Eintrag[3] + " " + Eintrag[4] + " " + Eintrag[5]);
             }
 
-            Console.ReadKey();
-            //            FoExcelImportExport TestFo = new FoExcelImportExport(ProgrammVerzeichnisse);
-            //            TestFo.ShowDialog();            
+            Console.ReadKey();         
         }
     }
 }
